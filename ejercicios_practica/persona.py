@@ -9,12 +9,13 @@ Descripcion:
 Programa creado para administrar la base de datos de registro de personas
 '''
 
-__author__ = "Inove Coding School"
-__email__ = "alumnos@inove.com.ar"
-__version__ = "1.1"
+__author__ = "Johana Rangel"
+__email__ = "johanarang@hotmail.com"
+__version__ = "1.0"
 
 import os
 import sqlite3
+import requests
 
 db = {}
 
@@ -66,12 +67,16 @@ def dict_factory(cursor, row):
     return d
 
 
-def report(limit=0, offset=0):
+def report(limit=0, offset=0, dict_format=False):
     # Conectarse a la base de datos
     conn = sqlite3.connect(db['database'])
     c = conn.cursor()
 
-    query = 'SELECT name, age, nationality FROM persona'
+    if dict_format is True:
+        conn.row_factory = dict_factory
+
+    query = 'SELECT name, age, nationality  \
+            FROM persona'
 
     if limit > 0:
         query += ' LIMIT {}'.format(limit)
@@ -86,3 +91,25 @@ def report(limit=0, offset=0):
     # Cerrar la conexión con la base de datos
     conn.close()
     return query_results
+
+def nationality_review():
+    
+    conn = sqlite3.connect(db['database'])
+    c = conn.cursor()
+    
+    c.execute('''SELECT COUNT(name) AS cantidad_personas, nationality \
+                FROM persona GROUP BY nationality;''')
+        
+    resultados = c.fetchall()
+    
+    if resultados is None:
+        return []
+
+    conn.close()
+
+    # Extraigo la informacion en listas
+    total_personas = [x[0] for x in resultados]
+    nacionalidad =  [x[1] for x in resultados]
+
+    return total_personas, nacionalidad
+    

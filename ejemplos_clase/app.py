@@ -116,7 +116,7 @@ def pulsaciones_historico(name):
 
         # Crear el grafico que se desea mostrar
         fig, ax = plt.subplots(figsize=(16, 9))
-        ax.plot(time, heartrate)
+        ax.bar(time, heartrate)
         ax.get_xaxis().set_visible(False)
 
         # Convertir ese grafico en una imagen para enviar por HTTP

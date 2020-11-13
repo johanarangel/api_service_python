@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-API Monitor cardíaco
+API Persona
 ---------------------------
 Autor: Inove Coding School
 Version: 1.0

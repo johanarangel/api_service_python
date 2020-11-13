@@ -18,8 +18,8 @@ Ingresar a la siguiente URL para ver los endpoints disponibles
 http://127.0.0.1:5000/
 '''
 
-__author__ = "Inove Coding School"
-__email__ = "INFO@INOVE.COM.AR"
+__author__ = "Johana Rangel"
+__email__ = "johanarang@hotmail.com"
 __version__ = "1.0"
 
 # Realizar HTTP POST --> post.py
@@ -88,42 +88,106 @@ def reset():
 
 @app.route("/personas")
 def personas():
+        
     try:
         # Mostrar todas las personas
-        result = persona.report()
-        return jsonify(result)
-    except:
-        return jsonify({'trace': traceback.format_exc()})
-
-
-@app.route("/comparativa")
-def comparativa():
-    try:
-        # Mostrar todos los registros en formato tabla
-        result = '''<h3>Implementar una función en persona.py
-                    nationality_review</h3>'''
-        result += '''<h3>Esa funcion debe devolver los datos que necesite
-                    para implementar el grafico a mostrar</h3>'''
+        result = show()
         return (result)
     except:
         return jsonify({'trace': traceback.format_exc()})
+        
 
+@app.route("/comparativa")
+def comparativa():
+   
+    try: 
+        
+        total_personas, nacionalidad = persona.nationality_review()
+        
+        # Crear el grafico que se desea mostrar
+        fig, ax = plt.subplots(figsize=(16, 9))
+        ax.bar(nacionalidad, total_personas)
+        ax.get_xaxis().set_visible(False)
 
+        # Convertir ese grafico en una imagen para enviar por HTTP
+        # y mostrar en el HTML
+        output = io.BytesIO()
+        FigureCanvas(fig).print_png(output)
+        plt.close(fig)  # Cerramos la imagen para que no consuma memoria del sistema
+        return Response(output.getvalue(), mimetype='image/png')
+
+    except:
+        return jsonify({'trace': traceback.format_exc()})
+
+    
 @app.route("/registro", methods=['POST'])
 def registro():
     if request.method == 'POST':
         # Obtener del HTTP POST JSON el nombre y los pulsos
-        # name = ...
-        # age = ...
-        # nationality = ...
+        name = str(request.form.get('name'))
+        age = str(request.form.get('age'))
+        nationality = str(request.form.get('nationality'))
         
-        # persona.insert(name, int(age), nationality)
+        if (name is None or age is None or age.isdigit() is False or nationality is None):
+            return Response (status=400)
+        
+        persona.insert(name, int(age), nationality)
         return Response(status=200)
+
+def show(show_type='json'):
+
+    # SE PIDEN LOS DATOS DE LA URL
+    limit_str = str(request.args.get('limit'))
+    offset_str = str(request.args.get('offset'))
+
+    limit = 0
+    offset = 0
+
+    if(limit_str is not None) and (limit_str.isdigit()):
+        limit = int(limit_str)
+
+    if(offset_str is not None) and (offset_str.isdigit()):
+        offset = int(offset_str)
+
+    if show_type == 'json':
+        data = persona.report(limit=limit, offset=offset, dict_format=True)
+        return jsonify(data)
     
+    elif show_type == 'table':
+        data = persona.report(limit=limit, offset=offset, dict_format=True)
+        return html_table(data)
+
+    else:
+        data = persona.report(limit=limit, offset=offset, dict_format=True)
+        return jsonify(data)
+
+def html_table(data):
+
+    # Tabla HTML, header y formato
+    result = '<table border="1">'
+    result += '<thead cellpadding="1.0" cellspacing="1.0">'
+    result += '<tr>'
+    result += '<th>Nro personas</th>'
+    result += '<th>Nacionalidad</th>'
+    result += '</tr>'
+
+    for row in data:
+        # Fila de una tabla HTML
+        result += '<tr>'
+        result += '<td>' + str(row[0]) + '</td>'
+        result += '<td>' + str(row[1]) + '</td>'
+        result += '</tr>'
+
+    # Fin de la tabla HTML
+    result += '</thead cellpadding="0" cellspacing="0" >'
+    result += '</table>'
+
+    return result
 
 if __name__ == '__main__':
     print('Servidor arriba!')
 
-    app.run(host=server['host'],
+    app.run(host=server['host'],            
             port=server['port'],
             debug=True)
+
