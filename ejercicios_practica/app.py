@@ -106,8 +106,13 @@ def comparativa():
         
         # Crear el grafico que se desea mostrar
         fig, ax = plt.subplots(figsize=(16, 9))
-        ax.bar(nacionalidad, total_personas)
-        ax.get_xaxis().set_visible(False)
+        fig.suptitle('"Gráfico comparativo por nacionalidad"', fontsize=18)
+    
+        ax.bar(nacionalidad, total_personas, color='indigo')
+        ax.set_facecolor('silver')
+        ax.set_xlabel('Nacionalidad', fontsize=15)
+        ax.set_ylabel('Cantidad de personas', fontsize=15)
+        ax.get_xaxis().set_visible(True)
 
         # Convertir ese grafico en una imagen para enviar por HTTP
         # y mostrar en el HTML
